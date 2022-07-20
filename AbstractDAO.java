@@ -82,9 +82,17 @@ public abstract class AbstractDAO<T> {
                     ") VALUES(" + values.toString() + ")";
 
             try (Statement st = conn.createStatement()) {
-                st.execute(sql);
+                st.execute(sql, Statement.RETURN_GENERATED_KEYS);
+                try (ResultSet generatedKeys = st.getGeneratedKeys()) {
+                    if (generatedKeys.next()) {
+                        id.setAccessible(true);
+                        id.set(t, generatedKeys.getInt(1));
+                    }
+                    else {
+                        throw new SQLException();
+                    }
+                }
             }
-
             // TODO: get ID
             // SELECT - X
 
